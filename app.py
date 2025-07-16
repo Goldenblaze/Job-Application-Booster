@@ -2,19 +2,47 @@ import streamlit as st
 from google import generativeai as genai
 import pdfplumber
 import docx
+import os
 
-# --- Load API Key ---
+# --- Improved API Key Configuration ---
 try:
-    GOOGLE_API_KEY = st.secrets["google"]["api_key"]
-    genai.configure(api_key=GOOGLE_API_KEY)
+    # Try multiple possible secret locations with fallbacks
+    GOOGLE_API_KEY = (
+        st.secrets.get("google", {}).get("api_key") or      # Try [google] api_key
+        st.secrets.get("gemini", {}).get("api_key") or      # Try [gemini] api_key
+        st.secrets.get("api_key") or                        # Try root-level api_key
+        os.environ.get("GOOGLE_API_KEY")                    # Fallback to environment variable
+    )
+
+    if not GOOGLE_API_KEY:
+        raise KeyError("No API key found in secrets or environment variables")
+
+    # Configure the API - two possible methods
+    try:
+        # Method 1: Direct configuration
+        genai.configure(api_key=GOOGLE_API_KEY)
+    except Exception as e:
+        # Method 2: Via environment variable (fallback)
+        os.environ["GOOGLE_API_KEY"] = GOOGLE_API_KEY
+        genai.configure()  # Will use the environment variable
+
+    # Test the configuration
     model = genai.GenerativeModel('gemini-1.5-flash')
+    # Quick test call (timeout after 2 seconds to verify connection)
+    model.generate_content("Test connection", request_options={"timeout": 2})
+
 except KeyError:
     st.error("""
-    ❌ API key not found. Please configure:
-    1. Create .streamlit/secrets.toml with:
+    ❌ API key configuration error. Please check:
+    1. Your secrets.toml contains either:
        [google]
-       api_key = "your_api_key_here"
-    2. For deployment, add secrets in Streamlit Cloud settings
+       api_key = "your_key_here"
+       
+       OR
+       
+       api_key = "your_key_here"
+       
+    2. For deployment, secrets are set in Streamlit Cloud
     """)
     st.stop()
 except Exception as e:
@@ -223,7 +251,6 @@ if st.button(t("generate_button")):
                 4. Prioritizes relevant skills/experience
                 """)
 
-            # The changed prompt starts here
             full_prompt = f"""
             You are a professional career coach and an expert in job applications.
             Given the following resume and job description, please generate the requested items in clearly separated sections using headings (###).
@@ -247,7 +274,6 @@ if st.button(t("generate_button")):
             - Use professional formatting
             - Highlight transferable skills
             """
-            # The changed prompt ends here
 
             try:
                 # Initialize empty containers for each section
