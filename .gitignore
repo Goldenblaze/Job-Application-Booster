@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*.env
+
+# Secrets
+.streamlit/secrets.toml
+secrets.json
+
+# Jupyter/IDE
+.ipynb_checkpoints/
+.idea/
+.vscode/
+
+# System
+.DS_Store
+.streamlit/
+__pycache__/
