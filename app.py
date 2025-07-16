@@ -225,7 +225,7 @@ job_desc = st.text_area(
 )
 
 # --- Boost Button ---
-st.header("2. Boost!")
+st.header("Boost!")
 
 if st.button(t("generate_button")):
     if not resume or not job_desc:
