@@ -51,6 +51,7 @@ translations = {
         "error_api_generation": "❌ Gemini API Error: {}",
         "footer": "Built with ❤️ by Okoli Chidozie (GoldenBlaze)"
     },
+    # ... rest of translations unchanged ...
     ":es: Spanish": {
         "page_title": "Potenciador de Solicitudes de Empleo",
         "page_icon": "💼",
@@ -309,6 +310,9 @@ st.header(trans["generate_header"])
 start = st.button(trans["generate_button"])
 
 # --- Prompt box to edit Cover Letter specifically ---
+# Always define the user_custom_prompt variable before referencing it
+user_custom_prompt = st.session_state.get("custom_prompt", "")
+
 if generate_cl:
     st.markdown(f"### {trans['custom_prompt_header']}")
     user_custom_prompt = st.text_input(
@@ -353,6 +357,7 @@ if generate_cl:
                     st.error(trans["error_generation"].format(e))
 
 # --- Main Generation ---
+# Use the safely initialized user_custom_prompt
 if start and not user_custom_prompt:
     if not resume or not job_desc:
         st.warning(trans["warning_input"])
